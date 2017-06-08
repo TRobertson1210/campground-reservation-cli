@@ -17,7 +17,12 @@ public class JDBCReservationDAO implements ReservationDAO {
 		this.template = new JdbcTemplate(dataSource);
 	}
 	@Override
-	public Long bookReservation(String name, LocalDate fromDate, LocalDate toDate) {
+	public Long bookReservation(String campId, LocalDate arrivalDate, LocalDate departureDate) {
+		Long campLongId = Long.valueOf(campId);
+		
+		
+		
+		
 		String sqlInsertStatement = "INSERT INTO reservation (site_id, name, from_date, to_date, create_date) VALUES "
 				+ "(?, ?, ?, ?, NOW()) RETURNING reservation_id";
 		SqlRowSet results = template.queryForRowSet(sqlInsertStatement, , name, , , );

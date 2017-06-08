@@ -20,40 +20,48 @@ public class JDBCSiteDAO implements SiteDAO {
 	public JDBCSiteDAO(DataSource dataSource) {
 		this.template = new JdbcTemplate(dataSource);
 	}
-	
+
 	@Override
-	public List<Site> getAllAvailableSites(String name, LocalDate fromDate, LocalDate toDate) {
+	public List<Site> getAllAvailableSites(Long campgroundId, LocalDate fromDate, LocalDate toDate) {
 		List<Site> allAvailableSites = new ArrayList<>();
-		String sqlGetCampgroundId = "SELECT campground_id FROM campground WHERE name = ?";
-		SqlRowSet results = template.queryForRowSet(sqlGetCampgroundId, name);
-		Long campgroundId = results.getLong("campground_id");
-		
-		String sqlGetParkId = "SELECT park_id FROM campground WHERE name = ?";
-		results = template.queryForRowSet(sqlGetParkId, name);
-		Long parkId = results.getLong("park_id");
-		
-		String sqlAllAvailableSites = "SELECT site_number FROM reservation JOIN site ON site.site_id = reservation.site_id "
-				+ "JOIN campground ON campground.campground_id = site.campground_id "
-				+ "WHERE park_id = ? AND campground_id = ? AND ? NOT BETWEEN reservation.from_date AND reservation.to_date AND ? NOT BETWEEN resercation.from_date AND reservation.to_date";
-		results = template.queryForRowSet(sqlAllAvailableSites, parkId, campgroundId, fromDate, toDate);
-		while(results.next()) {
-			Site site = mapRowToSite(results);
-			allAvailableSites.add(site);
-		}
-		return allAvailableSites;
-	}
+
+
+		String sqlGetParkId = "SELECT park_id FROM campground WHERE campground_id = ?";
+		SqlRowSet results = template.queryForRowSet(sqlGetParkId, campgroundId);
+		Long parkId = null;
+		if(results.next()) {
+			parkId = results.getLong("park_id");
+		} 
 	
-	public Site mapRowToSite(SqlRowSet results) {
-		Site site;
-		site = new Site();
-		site.setId(results.getLong("site_id"));
-		site.setSiteNumber(results.getInt("site_number"));
-		site.setMaxOccupancy(results.getInt("site_occupancy"));
-		site.setAccessible(results.getBoolean("accessible"));
-		site.setMaxRVLength(results.getInt("max_rv_length"));
-		site.setUtilities(results.getBoolean("utilities"));
-		
-		return site;
+	String sqlAllAvailableSites = "SELECT * FROM site WHERE campground_id = ? AND site_id NOT IN (SELECT site.site_id "
+			+ "FROM reservation "
+			+ "JOIN site ON site.site_id = reservation.site_id "
+			+ "JOIN campground ON campground.campground_id = site.campground_id "
+			+ "WHERE site.campground_id = ? "
+			+ "AND ((?  BETWEEN reservation.from_date AND reservation.to_date) "
+			+ "OR (?  BETWEEN reservation.from_date AND reservation.to_date) "
+			+ "OR (reservation.from_date BETWEEN ? AND ?) "
+			+ "OR (reservation.to_date BETWEEN ? AND ?))) "
+			+ "LIMIT 5";
+	results = template.queryForRowSet(sqlAllAvailableSites, campgroundId, campgroundId, fromDate, toDate, fromDate, toDate, fromDate, toDate);
+	while(results.next()) {
+		Site site = mapRowToSite(results);
+		allAvailableSites.add(site);
 	}
+	return allAvailableSites;
+}
+
+public Site mapRowToSite(SqlRowSet results) {
+	Site site;
+	site = new Site();
+	site.setId(results.getLong("site_id"));
+	site.setSiteNumber(results.getInt("site_number"));
+	site.setMaxOccupancy(results.getInt("max_occupancy"));
+	site.setAccessible(results.getBoolean("accessible"));
+	site.setMaxRVLength(results.getInt("max_rv_length"));
+	site.setUtilities(results.getBoolean("utilities"));
+
+	return site;
+}
 
 }

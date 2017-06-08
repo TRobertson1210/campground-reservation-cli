@@ -12,6 +12,17 @@ public class Park {
 	private int annualVisitorCount; 
 	private String description;
 	
+	public void printParkInfo() {
+		System.out.println(getName() + " National Park");
+		System.out.println("Location: " + getLocation());
+		System.out.println("Established: " + getEstablishDate());
+		System.out.println("Area: " + getArea() + " km^2");
+		System.out.println("Annual Visitors: " + getAnnualVisitorCount());
+		System.out.println();
+		System.out.println(getDescription());
+	}
+	
+	
 	public Long getId() {
 		return id;
 	}

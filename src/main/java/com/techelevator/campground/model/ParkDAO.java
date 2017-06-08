@@ -1,9 +1,9 @@
 package com.techelevator.campground.model;
 
-import java.util.List;
+import java.util.Map;
 
 public interface ParkDAO {
 	
-	public List<Park> getAvailableParks();
+	public Map<String, Park> getAvailableParks();
 
 }

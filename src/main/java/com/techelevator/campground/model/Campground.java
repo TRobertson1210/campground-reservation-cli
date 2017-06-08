@@ -10,6 +10,11 @@ public class Campground {
 	private String closeMonth;
 	private BigDecimal dailyFee;
 	
+	public void printCampgroundDetails() {
+		System.out.println("Name\tOpen\tClose\tDaily Fee");
+		System.out.println("#" + getId() + "\t" + getName() + getOpenMonth() + getCloseMonth() + getDailyFee());
+	}
+	
 	public Long getId() {
 		return id;
 	}

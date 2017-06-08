@@ -4,5 +4,5 @@ import java.time.LocalDate;
 
 public interface ReservationDAO {
 
-	public Long bookReservation(String name, LocalDate fromDate, LocalDate toDate);
+	public Long bookReservation(String campId, LocalDate arrivalDate, LocalDate departureDate);
 }
