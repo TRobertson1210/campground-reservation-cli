@@ -6,7 +6,7 @@ public class Site {
 	private int siteNumber;
 	private int maxOccupancy;
 	private boolean accessible;
-	private int maxRVLenth;
+	private int maxRVLength;
 	private boolean utilities;
 	
 	public Long getId() {
@@ -33,11 +33,11 @@ public class Site {
 	public void setAccessible(boolean accessible) {
 		this.accessible = accessible;
 	}
-	public int getMaxRVLenth() {
-		return maxRVLenth;
+	public int getMaxRVLength() {
+		return maxRVLength;
 	}
-	public void setMaxRVLenth(int maxRVLenth) {
-		this.maxRVLenth = maxRVLenth;
+	public void setMaxRVLength(int maxRVLength) {
+		this.maxRVLength = maxRVLength;
 	}
 	public boolean isUtilities() {
 		return utilities;
