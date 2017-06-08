@@ -3,10 +3,10 @@ DROP TABLE IF EXISTS site;
 DROP TABLE IF EXISTS campground;
 DROP TABLE IF EXISTS park;
 
-DROP SEQUENCE reservation_reservation_id_seq;
-DROP SEQUENCE site_site_id_seq;
-DROP SEQUENCE campground_campground_id_seq;
-DROP SEQUENCE park_park_id_seq;
+DROP SEQUENCE IF EXISTS reservation_reservation_id_seq;
+DROP SEQUENCE IF EXISTS site_site_id_seq;
+DROP SEQUENCE IF EXISTS campground_campground_id_seq;
+DROP SEQUENCE IF EXISTS park_park_id_seq;
 
 CREATE SEQUENCE park_park_id_seq
   INCREMENT BY 1
