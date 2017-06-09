@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import com.techelevator.projects.model.jdbc.JDBCProjectDAO;
 
 public class JDBCSiteDAOTest {
 	

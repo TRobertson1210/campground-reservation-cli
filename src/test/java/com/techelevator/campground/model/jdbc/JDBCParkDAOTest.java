@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.techelevator.campground.model.Park;
 
@@ -47,10 +48,12 @@ public class JDBCParkDAOTest {
 
 	@Test
 	public void testGetAvailableParks() {
-		Map<String, Park> availableParks = new TreeMap<>();
+		SqlRowSet results = template.
 		
+		Map<String, Park> expectedPark = new TreeMap<>();
+		expectedPark.put("TEST PARK", value)
 		
-		fail("Not yet implemented");
+		assertEquals(expectedPark.size(), dao.getAvailableParks().size());
 	}
 
 	@Test
