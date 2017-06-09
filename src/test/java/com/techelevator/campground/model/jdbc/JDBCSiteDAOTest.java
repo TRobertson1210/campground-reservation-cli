@@ -7,7 +7,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+
+import com.techelevator.projects.model.jdbc.JDBCProjectDAO;
 
 public class JDBCSiteDAOTest {
 	
@@ -25,14 +28,18 @@ public class JDBCSiteDAOTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		dataSource.destroy();
 	}
 
 	@Before
 	public void setUp() throws Exception {
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		dao = new JDBCSiteDAO(dataSource);
 	}
 
 	@After
 	public void tearDown() throws Exception {
+		dataSource.getConnection().rollback();
 	}
 
 	@Test
