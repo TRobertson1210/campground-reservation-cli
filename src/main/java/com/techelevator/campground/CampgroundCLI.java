@@ -33,9 +33,9 @@ public class CampgroundCLI {
 	private static final String MENU_OPTION_RETURN_TO_MAIN = "Return to main menu";
 
 	private static final String PARK_MENU_OPTION_ALL_CAMPGROUNDS = "Show all campgrounds";
-	private static final String PARK_MENU_OPTION_SEARCH_FOR_RESERVATION = "Search for Reservation";
+	//private static final String PARK_MENU_OPTION_SEARCH_FOR_RESERVATION = "Search for Reservation";
 	private static final String[] PARK_MENU_OPTIONS = new String[] { PARK_MENU_OPTION_ALL_CAMPGROUNDS,
-			PARK_MENU_OPTION_SEARCH_FOR_RESERVATION,
+			/*PARK_MENU_OPTION_SEARCH_FOR_RESERVATION,*/
 			MENU_OPTION_RETURN_TO_MAIN};
 
 	private static final String CAMPGROUND_MENU_OPTION_SEARCH_RESERVATION = "Search for Available Reservations";
@@ -126,9 +126,9 @@ public class CampgroundCLI {
 		String choice = (String)menu.getChoiceFromOptions(PARK_MENU_OPTIONS);
 		if(choice.equals(PARK_MENU_OPTION_ALL_CAMPGROUNDS)) {
 			handleListAllCampgrounds(selectedPark);
-		} else if(choice.equals(PARK_MENU_OPTION_SEARCH_FOR_RESERVATION)) {
+		} /*else if(choice.equals(PARK_MENU_OPTION_SEARCH_FOR_RESERVATION)) {
 			handleSearchForAvailableSites();
-		}
+		}*/
 	}
 
 	private void handleListAllCampgrounds(Park selectedPark) {
@@ -144,13 +144,17 @@ public class CampgroundCLI {
 			handleParkInfoScreen(selectedPark);
 		}
 	}
-
+//Variables to store values for reservation
+	LocalDate arrivalDate = null;
+	LocalDate departureDate = null;
+	Long campgroundId = null;
+	Long siteId = null;
+	
 	private void handleSearchForAvailableSites() {
 		printHeading("Search for Campground Sites");
 		String campgroundSelect = getUserInput("Which campground number (enter 0 to cancel)?");
-		Long campgroundId = Long.valueOf(campgroundSelect);
-		LocalDate arrivalDate = null;
-		LocalDate departureDate = null;
+		campgroundId = Long.valueOf(campgroundSelect);
+		
 		do {
 			try {
 				String arrivalDateString = getUserInput("What is the arrival date YYYY-MM-DD");
@@ -168,26 +172,36 @@ public class CampgroundCLI {
 			}
 		} while (departureDate == null);
 		
-		//Find a way to break out if there are no available campsites
 		List<Site> availableSites= siteDAO.getAllAvailableSites(campgroundId, arrivalDate, departureDate);
 		Campground campground = campgroundDAO.getCampgroundById(campgroundId);
 		System.out.println("Results Matching Your Search Criteria");
-		System.out.println("Site No.\tMaxOccup.\tAccessible?\tMax RV Length\tUtiltiy\tCost");
+		System.out.println("Site No.\t MaxOccup.\t Accessible?\t Max RV Length\t Utilities\t Cost");
 		if(availableSites.isEmpty()) {
 			System.out.println("There are no campsites available for that date range.");
+			handleSearchForAvailableSites();
 			
 		} else {
 			for(Site element : availableSites) {
-				System.out.println(element.getId() + "\t" + element.getMaxOccupancy() + element.isAccessible() + element.getMaxRVLength() + element.isUtilities() + campground.getDailyFee());
+				System.out.println(element.getId() + "\t" + element.getMaxOccupancy() +"\t" + element.isAccessible() +"\t"+ element.getMaxRVLength() +"\t"+ element.isUtilities() +"\t"+ campground.getDailyFee());
 			}
+			handleMakeReservation();
 		}
 
 	}
 
 	private void handleMakeReservation() {
+		String siteSelect = getUserInput("Which site should be reserved? (enter 0 to cancel)?");
+		siteId = Long.valueOf(siteSelect);
+		String reservedNameString = getUserInput("What name to reserve site under?");
+		Long reservationId = reservationDAO.bookReservation(reservedNameString, siteId, arrivalDate, departureDate);
+			
+		System.out.println("Your reservation has been made. Please copy your confirmation number for your records: " + reservationId);
+
 		
 	}
 
+	
+//Toolbox Methods
 	private LocalDate stringToLocalDate(String string) {
 		LocalDate localDate = LocalDate.parse(string);
 		return localDate;
