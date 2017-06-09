@@ -113,7 +113,13 @@ public class CampgroundCLI {
 	}
 
 //Handle Methods execute based on the user's choice
-	
+	/*
+	 * This handle runs code that will display the park information details specific to the park_id that 
+	 * is passed through the selectedPark variable.
+	 * 
+	 * In addition, we are displaying the next set of options for the user to continue through the process
+	 * or return to previous screen.
+	 */
 	private void handleParkInfoScreen(Park selectedPark) {
 		printHeading("Park Information Screen");
 		selectedPark.printParkInfo();
