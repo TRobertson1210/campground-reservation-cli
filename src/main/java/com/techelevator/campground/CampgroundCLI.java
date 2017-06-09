@@ -1,7 +1,9 @@
 package com.techelevator.campground;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -13,6 +15,7 @@ import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.CampgroundDAO;
 import com.techelevator.campground.model.Park;
 import com.techelevator.campground.model.ParkDAO;
+import com.techelevator.campground.model.Reservation;
 import com.techelevator.campground.model.ReservationDAO;
 import com.techelevator.campground.model.Site;
 import com.techelevator.campground.model.SiteDAO;
@@ -25,7 +28,7 @@ import com.techelevator.campground.view.Menu;
 
 public class CampgroundCLI {
 
-//Menu CONSTANTS to help navigate the user through the reservation process
+	//Menu CONSTANTS to help navigate the user through the reservation process
 	private static final String MAIN_MENU_OPTION_QUIT = "Quit";
 	private static final String[] MAIN_MENU_OPTIONS = new String[] {  
 			MAIN_MENU_OPTION_QUIT };
@@ -46,24 +49,25 @@ public class CampgroundCLI {
 	private static final String RESERVATION_MENU_OPTION_SELECT_CAMPGROUND = "Which campground (enter 0 to cancel)?";
 	private static final String[] RESERVATION_MENU_OPTIONS = new String[] { RESERVATION_MENU_OPTION_SELECT_CAMPGROUND,
 			MENU_OPTION_RETURN_TO_MAIN };
-	
-//Primary VARIABLES 	
+
+	//Primary VARIABLES 	
 	private Menu menu;
 	private ParkDAO parkDAO;
 	private CampgroundDAO campgroundDAO;
 	private ReservationDAO reservationDAO;
 	private SiteDAO siteDAO;
+	private static Park selectedPark = null;
 
-//This is what runs first when the program is executed.  
+	//This is what runs first when the program is executed.  
 	public static void main(String[] args) {
 		CampgroundCLI application = new CampgroundCLI();
 		application.run();
 	}
 
-/*
- * The CONSTRUCTOR for the CampgroundCLI application. Here we creating a Menu object,
- * making a connection to the database, and creating DAO objects to be used later.
- */
+	/*
+	 * The CONSTRUCTOR for the CampgroundCLI application. Here we creating a Menu object,
+	 * making a connection to the database, and creating DAO objects to be used later.
+	 */
 	public CampgroundCLI() {
 		this.menu = new Menu(System.in, System.out);
 
@@ -71,21 +75,22 @@ public class CampgroundCLI {
 		dataSource.setUrl("jdbc:postgresql://localhost:5432/campground");
 		dataSource.setUsername("postgres");
 		dataSource.setPassword("postgres1");
-		
+
 		parkDAO = new JDBCParkDAO(dataSource);
 		campgroundDAO = new JDBCCampgroundDAO(dataSource);
 		reservationDAO = new JDBCReservationDAO(dataSource);
 		siteDAO = new JDBCSiteDAO(dataSource);
+
 	}
 
-/*
- * The run() method that executes the start up of the program application. Here we are displaying a method
- * that shows a banner of the application name; uses a map to hold the list of parks data being retrieves from the 
- * campgrounds database;then displays a list of the parks as choices for the user to select.
- */
+	/*
+	 * The run() method that executes the start up of the program application. Here we are displaying a method
+	 * that shows a banner of the application name; uses a map to hold the list of parks data being retrieves from the 
+	 * campgrounds database;then displays a list of the parks as choices for the user to select.
+	 */
 	public void run() {
 		displayApplicationBanner();
-		
+
 		Map<String, Park> parks = parkDAO.getAvailableParks();
 		Set<String> parkSet = parks.keySet();
 		Object[] parkOptionArray = new Object[parkSet.size()+1];
@@ -106,13 +111,13 @@ public class CampgroundCLI {
 				 * the program, using the selectedPark variable, so we can call relative information specific 
 				 * to this park_id.
 				 */
-				Park selectedPark = parks.get(choice);
+				selectedPark = parks.get(choice);
 				handleParkInfoScreen(selectedPark);
 			}	
 		}
 	}
 
-//Handle Methods execute based on the user's choice
+	//Handle Methods execute based on the user's choice
 	/*
 	 * This handle runs code that will display the park information details specific to the park_id that 
 	 * is passed through the selectedPark variable.
@@ -130,10 +135,11 @@ public class CampgroundCLI {
 			handleSearchForAvailableSites();
 		}*/
 	}
+	List<Campground> campgroundList = null; //created outside for use in multiple handles
 
 	private void handleListAllCampgrounds(Park selectedPark) {
 		printHeading("Park Campgrounds");
-		List<Campground> campgroundList = campgroundDAO.getAllCampgrounds(selectedPark);
+		campgroundList = campgroundDAO.getAllCampgrounds(selectedPark);
 		for(Campground element : campgroundList) {
 			element.printCampgroundDetails();
 		}
@@ -144,47 +150,58 @@ public class CampgroundCLI {
 			handleParkInfoScreen(selectedPark);
 		}
 	}
-//Variables to store values for reservation
+	//Variables to store values for reservation
 	LocalDate arrivalDate = null;
 	LocalDate departureDate = null;
 	Long campgroundId = null;
 	Long siteId = null;
-	
+
 	private void handleSearchForAvailableSites() {
 		printHeading("Search for Campground Sites");
 		String campgroundSelect = getUserInput("Which campground number (enter 0 to cancel)?");
 		campgroundId = Long.valueOf(campgroundSelect);
-		
-		do {
-			try {
-				String arrivalDateString = getUserInput("What is the arrival date YYYY-MM-DD");
-				arrivalDate = stringToLocalDate(arrivalDateString);
-			} catch (DateTimeParseException e) {
-				System.out.println("Incorrect date format");
+		int campgroundSelectInt = Integer.parseInt(campgroundSelect);
+		if (campgroundSelectInt <= campgroundList.size()) {
+			if (campgroundSelectInt > 0) {
+				do {
+					try {
+						String arrivalDateString = getUserInput("What is the arrival date YYYY-MM-DD");
+						arrivalDate = stringToLocalDate(arrivalDateString);
+					} catch (DateTimeParseException e) {
+						System.out.println("Incorrect date format");
+					}
+				} while(arrivalDate == null);
+				do {
+					try {
+						String departureDateString = getUserInput("What is the departure date YYYY-MM-DD");
+						departureDate = stringToLocalDate(departureDateString);
+					} catch (DateTimeParseException e) {
+						System.out.println("Incorrect date format");
+					}
+				} while (departureDate == null);
+
+				List<Site> availableSites= siteDAO.getAllAvailableSites(campgroundId, arrivalDate, departureDate);
+				Campground campground = campgroundDAO.getCampgroundById(campgroundId);
+				System.out.println("Results Matching Your Search Criteria");
+				System.out.println("Site No.\t MaxOccup.\t Accessible?\t Max RV Length\t Utilities\t Total Price");
+				Long daysBetween = ChronoUnit.DAYS.between(arrivalDate, departureDate);
+				BigDecimal daysBetweenBD = new BigDecimal(daysBetween);
+				if(availableSites.isEmpty()) {
+					System.out.println("There are no campsites available for that date range.");
+					handleSearchForAvailableSites();
+
+				} else {
+					for(Site element : availableSites) {
+						System.out.println(element.getId() + "\t" + element.getMaxOccupancy() +"\t" + element.isAccessible() +"\t"+ element.getMaxRVLength() +"\t"+ element.isUtilities() +"\t"+ (daysBetweenBD.multiply(campground.getDailyFee())));
+					}
+					handleMakeReservation();
+				}
+			} else {
+				handleListAllCampgrounds(selectedPark);
 			}
-		} while(arrivalDate == null);
-		do {
-			try {
-				String departureDateString = getUserInput("What is the departure date YYYY-MM-DD");
-				departureDate = stringToLocalDate(departureDateString);
-			} catch (DateTimeParseException e) {
-				System.out.println("Incorrect date format");
-			}
-		} while (departureDate == null);
-		
-		List<Site> availableSites= siteDAO.getAllAvailableSites(campgroundId, arrivalDate, departureDate);
-		Campground campground = campgroundDAO.getCampgroundById(campgroundId);
-		System.out.println("Results Matching Your Search Criteria");
-		System.out.println("Site No.\t MaxOccup.\t Accessible?\t Max RV Length\t Utilities\t Cost");
-		if(availableSites.isEmpty()) {
-			System.out.println("There are no campsites available for that date range.");
-			handleSearchForAvailableSites();
-			
 		} else {
-			for(Site element : availableSites) {
-				System.out.println(element.getId() + "\t" + element.getMaxOccupancy() +"\t" + element.isAccessible() +"\t"+ element.getMaxRVLength() +"\t"+ element.isUtilities() +"\t"+ campground.getDailyFee());
-			}
-			handleMakeReservation();
+			System.out.println("\n*** "+campgroundSelect+" is not a valid option for this park. ***\n");
+			handleSearchForAvailableSites();
 		}
 
 	}
@@ -192,16 +209,19 @@ public class CampgroundCLI {
 	private void handleMakeReservation() {
 		String siteSelect = getUserInput("Which site should be reserved? (enter 0 to cancel)?");
 		siteId = Long.valueOf(siteSelect);
-		String reservedNameString = getUserInput("What name to reserve site under?");
-		Long reservationId = reservationDAO.bookReservation(reservedNameString, siteId, arrivalDate, departureDate);
-			
-		System.out.println("Your reservation has been made. Please copy your confirmation number for your records: " + reservationId);
+		if(siteId > 0) {
+			String reservedNameString = getUserInput("What name to reserve site under?");
+			Reservation reservationInfo = reservationDAO.bookReservation(reservedNameString, siteId, arrivalDate, departureDate);
 
-		
+			System.out.println("Your reservation has been made. Please copy your confirmation number for your records: " + reservationInfo.getId());
+		} else {
+			handleListAllCampgrounds(selectedPark);
+		}
+
 	}
 
-	
-//Toolbox Methods
+
+	//Toolbox Methods
 	private LocalDate stringToLocalDate(String string) {
 		LocalDate localDate = LocalDate.parse(string);
 		return localDate;

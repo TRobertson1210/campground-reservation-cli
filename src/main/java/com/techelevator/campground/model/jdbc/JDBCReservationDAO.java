@@ -1,14 +1,12 @@
 package com.techelevator.campground.model.jdbc;
 
 import java.time.LocalDate;
-import java.util.Calendar;
 
 import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import com.techelevator.campground.model.Park;
 import com.techelevator.campground.model.Reservation;
 import com.techelevator.campground.model.ReservationDAO;
 
@@ -20,15 +18,17 @@ public class JDBCReservationDAO implements ReservationDAO {
 		this.template = new JdbcTemplate(dataSource);
 	}
 	@Override
-	public Long bookReservation(String name, Long siteId, LocalDate arrivalDate, LocalDate departureDate) {
+	public Reservation bookReservation(String name, Long siteId, LocalDate arrivalDate, LocalDate departureDate) {
 		String sqlInsertStatement = "INSERT INTO reservation (site_id, name, from_date, to_date, create_date) VALUES "
-				+ "(?, ?, ?, ?, NOW()) RETURNING reservation_id";
-		SqlRowSet results = template.queryForRowSet(sqlInsertStatement, siteId, name, arrivalDate, departureDate);
-		Long reservationId = null;
+				+ "(?, ?, ?, ?, NOW())";
+		template.update(sqlInsertStatement, siteId, name, arrivalDate, departureDate);
+		String sqlGetReservationInfo = "SELECT * FROM reservation WHERE name = ? AND from_date = ? AND to_date = ?";
+		SqlRowSet results = template.queryForRowSet(sqlGetReservationInfo, name, arrivalDate, departureDate);
+		Reservation reservation = null;
 		if(results.next()){
-			reservationId = results.getLong("reservation_id");
+			reservation = mapRowToReservation(results);
 		}
-		return reservationId;
+		return reservation;
 	}
 	
 	public Reservation mapRowToReservation(SqlRowSet results) {

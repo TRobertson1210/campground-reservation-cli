@@ -1,6 +1,12 @@
 package com.techelevator.campground.model.jdbc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -9,6 +15,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
+import com.techelevator.campground.model.Campground;
+import com.techelevator.campground.model.Park;
+import com.techelevator.campground.model.ParkDAO;
 
 public class JDBCCampgroundDAOTest {
 
@@ -31,7 +42,6 @@ public class JDBCCampgroundDAOTest {
 
 	@Before
 	public void setUp() throws Exception {
-		JdbcTemplate template = new JdbcTemplate(dataSource);
 		dao = new JDBCCampgroundDAO(dataSource);
 	}
 
@@ -42,17 +52,46 @@ public class JDBCCampgroundDAOTest {
 
 	@Test
 	public void testGetAllCampgrounds() {
-		fail("Not yet implemented");
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		ParkDAO parkDAO = new JDBCParkDAO(dataSource);
+		Map<String, Park> expectedParkMap = parkDAO.getAvailableParks();
+		Park expectedPark = expectedParkMap.get("TEST PARK");
+		SqlRowSet results = template.queryForRowSet("SELECT * FROM campground WHERE name = 'CAMPGROUND A'");
+		List<Campground> expectedCampground = new ArrayList<>();
+		
+
+		if(results.next()){
+			expectedCampground.add(dao.mapRowToCampground(results));
+		}
+		assertEquals(expectedCampground.size(), dao.getAllCampgrounds(expectedPark).size());
 	}
+	
 
 	@Test
 	public void testGetCampgroundById() {
-		fail("Not yet implemented");
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		SqlRowSet results = template.queryForRowSet("SELECT * FROM campground WHERE name = 'CAMPGROUND A'");
+		Campground campground = null;
+		if(results.next()) {
+			campground = dao.mapRowToCampground(results);
+		}
+		
+		assertEquals(campground.getName(), dao.getCampgroundById(campground.getId()).getName());
 	}
 
 	@Test
 	public void testMapRowToCampground() {
-		fail("Not yet implemented");
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		SqlRowSet results = template.queryForRowSet("SELECT * FROM campground WHERE name = 'CAMPGROUND A'");
+		BigDecimal dailyFee = new BigDecimal("500.0");
+		
+		if(results.next()) {
+			assertEquals(Long.valueOf(1), dao.mapRowToCampground(results).getId());
+			assertEquals("CAMPGROUND A", dao.mapRowToCampground(results).getName());
+			assertEquals("01", dao.mapRowToCampground(results).getOpenMonth());
+			assertEquals("12", dao.mapRowToCampground(results).getCloseMonth());
+			assertEquals(dailyFee, dao.mapRowToCampground(results).getDailyFee());
+		}
 	}
 
 }

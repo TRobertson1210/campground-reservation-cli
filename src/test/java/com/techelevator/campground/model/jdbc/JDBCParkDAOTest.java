@@ -1,7 +1,8 @@
 package com.techelevator.campground.model.jdbc;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -20,7 +21,7 @@ public class JDBCParkDAOTest {
 
 	private static SingleConnectionDataSource dataSource;
 	private JDBCParkDAO dao;
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		dataSource = new SingleConnectionDataSource();
@@ -37,8 +38,8 @@ public class JDBCParkDAOTest {
 
 	@Before
 	public void setUp() throws Exception {
-		JdbcTemplate template = new JdbcTemplate(dataSource);
 		dao = new JDBCParkDAO(dataSource);
+
 	}
 
 	@After
@@ -48,17 +49,31 @@ public class JDBCParkDAOTest {
 
 	@Test
 	public void testGetAvailableParks() {
-		SqlRowSet results = template.
-		
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		SqlRowSet results = template.queryForRowSet("SELECT * FROM park WHERE name = 'TEST PARK'");
 		Map<String, Park> expectedPark = new TreeMap<>();
-		expectedPark.put("TEST PARK", value)
-		
+
+
+		if(results.next()){
+			expectedPark.put(dao.mapRowToPark(results).getName(), dao.mapRowToPark(results));
+		}
 		assertEquals(expectedPark.size(), dao.getAvailableParks().size());
 	}
 
 	@Test
 	public void testMapRowToPark() {
-		fail("Not yet implemented");
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		SqlRowSet results = template.queryForRowSet("SELECT * FROM park WHERE name = 'TEST PARK'");
+		LocalDate expectedDate = LocalDate.of(2017, 6, 8);
+
+		if(results.next()) {
+			assertEquals("TEST PARK", dao.mapRowToPark(results).getName());
+			assertEquals("Ohio", dao.mapRowToPark(results).getLocation());
+			assertEquals(expectedDate, dao.mapRowToPark(results).getEstablishDate());
+			assertEquals(0, dao.mapRowToPark(results).getArea());
+			assertEquals(10, dao.mapRowToPark(results).getAnnualVisitorCount());
+			assertEquals("This is a test park.", dao.mapRowToPark(results).getDescription());
+		}
 	}
 
 }

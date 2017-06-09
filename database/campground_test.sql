@@ -78,3 +78,5 @@ INSERT INTO campground (park_id, name, open_from_mm, open_to_mm, daily_fee) VALU
 INSERT INTO site (campground_id, site_number, max_occupancy, accessible, max_rv_length, utilities) VALUES (1, 1, 10, true, 0, true);
 INSERT INTO site (campground_id, site_number, max_occupancy, accessible, max_rv_length, utilities) VALUES (1, 2, 10, true, 0, true);
 INSERT INTO reservation (site_id, name, from_date, to_date, create_date) VALUES (2, 'Test Family', '1952-01-01', '2107-12-31', '1951-01-01');
+
+SELECT * FROM park WHERE name = 'TEST PARK';
