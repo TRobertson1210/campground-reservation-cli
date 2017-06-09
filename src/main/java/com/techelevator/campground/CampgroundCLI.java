@@ -25,7 +25,7 @@ import com.techelevator.campground.view.Menu;
 
 public class CampgroundCLI {
 
-
+//Menu CONSTANTS to help navigate the user through the reservation process
 	private static final String MAIN_MENU_OPTION_QUIT = "Quit";
 	private static final String[] MAIN_MENU_OPTIONS = new String[] {  
 			MAIN_MENU_OPTION_QUIT };
@@ -46,33 +46,46 @@ public class CampgroundCLI {
 	private static final String RESERVATION_MENU_OPTION_SELECT_CAMPGROUND = "Which campground (enter 0 to cancel)?";
 	private static final String[] RESERVATION_MENU_OPTIONS = new String[] { RESERVATION_MENU_OPTION_SELECT_CAMPGROUND,
 			MENU_OPTION_RETURN_TO_MAIN };
+	
+//Primary VARIABLES 	
 	private Menu menu;
 	private ParkDAO parkDAO;
 	private CampgroundDAO campgroundDAO;
 	private ReservationDAO reservationDAO;
 	private SiteDAO siteDAO;
 
+//This is what runs first when the program is executed.  
 	public static void main(String[] args) {
 		CampgroundCLI application = new CampgroundCLI();
 		application.run();
 	}
 
+/*
+ * The CONSTRUCTOR for the CampgroundCLI application. Here we creating a Menu object,
+ * making a connection to the database, and creating DAO objects to be used later.
+ */
 	public CampgroundCLI() {
 		this.menu = new Menu(System.in, System.out);
 
 		BasicDataSource dataSource = new BasicDataSource();
-		dataSource.setUrl("jdbc:postgresql://localhost:5432/projects");
+		dataSource.setUrl("jdbc:postgresql://localhost:5432/campground");
 		dataSource.setUsername("postgres");
 		dataSource.setPassword("postgres1");
-
+		
 		parkDAO = new JDBCParkDAO(dataSource);
 		campgroundDAO = new JDBCCampgroundDAO(dataSource);
 		reservationDAO = new JDBCReservationDAO(dataSource);
 		siteDAO = new JDBCSiteDAO(dataSource);
 	}
 
+/*
+ * The run() method that executes the start up of the program application. Here we are displaying a method
+ * that shows a banner of the application name; uses a map to hold the list of parks data being retrieves from the 
+ * campgrounds database;then displays a list of the parks as choices for the user to select.
+ */
 	public void run() {
-		displayApplicationBanner();	
+		displayApplicationBanner();
+		
 		Map<String, Park> parks = parkDAO.getAvailableParks();
 		Set<String> parkSet = parks.keySet();
 		Object[] parkOptionArray = new Object[parkSet.size()+1];
@@ -88,12 +101,19 @@ public class CampgroundCLI {
 			if(choice.equals("Quit")) {
 				System.exit(0);
 			} else {
+				/*
+				 * The user's choice of park is associated to the park_id so we can carry the park_id through 
+				 * the program, using the selectedPark variable, so we can call relative information specific 
+				 * to this park_id.
+				 */
 				Park selectedPark = parks.get(choice);
 				handleParkInfoScreen(selectedPark);
 			}	
 		}
 	}
 
+//Handle Methods execute based on the user's choice
+	
 	private void handleParkInfoScreen(Park selectedPark) {
 		printHeading("Park Information Screen");
 		selectedPark.printParkInfo();
