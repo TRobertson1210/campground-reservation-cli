@@ -175,6 +175,10 @@ public class CampgroundCLI {
 					try {
 						String departureDateString = getUserInput("What is the departure date YYYY-MM-DD");
 						departureDate = stringToLocalDate(departureDateString);
+						if(departureDate.isBefore(arrivalDate)) {
+							System.out.println("Please make sure your departure date is after your arrival.");
+							departureDate = null;
+						}
 					} catch (DateTimeParseException e) {
 						System.out.println("Incorrect date format");
 					}
