@@ -13,7 +13,7 @@ public class Campground {
 	public void printCampgroundDetails() {
 		//System.out.println("Name\tOpen\tClose\tDaily Fee");
 		//System.out.println("#" + getId() + "\t" + getName() + "\t\t"+ getOpenMonth() + "\t" + getCloseMonth() + "\t$" + getDailyFee());
-		System.out.printf("%-5s %-20s %-10s %-10s $%-10s %n", getId(), getName(), getOpenMonth(), getCloseMonth(), getDailyFee());
+		System.out.printf("%-5s %-20s %-10s %-10s $%-10.2f %n", getId(), getName(), getOpenMonth(), getCloseMonth(), getDailyFee());
 	}
 	
 	public Long getId() {

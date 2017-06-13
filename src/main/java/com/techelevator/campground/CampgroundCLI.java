@@ -56,7 +56,7 @@ public class CampgroundCLI {
 	private CampgroundDAO campgroundDAO;
 	private ReservationDAO reservationDAO;
 	private SiteDAO siteDAO;
-	private static Park selectedPark = null;
+	private Park selectedPark = null;
 
 	//This is what runs first when the program is executed.  
 	public static void main(String[] args) {
@@ -112,7 +112,7 @@ public class CampgroundCLI {
 				 * connected to this park_id.
 				 */
 				selectedPark = parks.get(choice);
-				handleParkInfoScreen(selectedPark);
+				handleParkInfoScreen();
 			}	
 		}
 	}
@@ -125,12 +125,12 @@ public class CampgroundCLI {
 	 * In addition, we are displaying the next set of options for the user to continue through the process
 	 * or return to previous screen.
 	 */
-	private void handleParkInfoScreen(Park selectedPark) {
+	private void handleParkInfoScreen() {
 		printHeading("Park Information Screen");
 		selectedPark.printParkInfo();
 		String choice = (String)menu.getChoiceFromOptions(PARK_MENU_OPTIONS);
 		if(choice.equals(PARK_MENU_OPTION_ALL_CAMPGROUNDS)) {
-			handleListAllCampgrounds(selectedPark);
+			handleListAllCampgrounds();
 		} /*else if(choice.equals(PARK_MENU_OPTION_SEARCH_FOR_RESERVATION)) {
 			handleSearchForAvailableSites();
 		}*/
@@ -140,7 +140,7 @@ public class CampgroundCLI {
 	/*
 	 * handleListAllCampgrounds displays a list of all campgrounds associated with the selectedPark
 	 */
-	private void handleListAllCampgrounds(Park selectedPark) {
+	private void handleListAllCampgrounds() {
 		printHeading("Park Campgrounds");
 		campgroundList = campgroundDAO.getAllCampgrounds(selectedPark);
 		//System.out.println("ID\tName\t\tOpen\tClose\tDaily Fee");
@@ -152,17 +152,19 @@ public class CampgroundCLI {
 		if(choice.equals(CAMPGROUND_MENU_OPTION_SEARCH_RESERVATION)) {
 			handleSearchForAvailableSites();
 		} else {
-			handleParkInfoScreen(selectedPark);
+			handleParkInfoScreen();
 		}
 	}
 	
-	//Variables to store values for reservation
-	LocalDate arrivalDate = null;
-	LocalDate departureDate = null;
-	Long campgroundId = null;
-	Long siteId = null;
+	
 
 	private void handleSearchForAvailableSites() {
+		//Variables to store values for reservation
+		LocalDate arrivalDate = null;
+		LocalDate departureDate = null;
+		Long campgroundId = null;
+		Long siteId = null;
+		
 		printHeading("Search for Campground Sites");
 		String campgroundSelect = getUserInput("Which campground number (enter 0 to cancel)?");
 		campgroundId = Long.valueOf(campgroundSelect);
@@ -192,9 +194,13 @@ public class CampgroundCLI {
 
 				List<Site> availableSites= siteDAO.getAllAvailableSites(campgroundId, arrivalDate, departureDate);
 				Campground campground = campgroundDAO.getCampgroundById(campgroundId);
+				if(campground == null) {
+					System.out.println("Campground not found!");
+					return;
+				}
 				System.out.println("Results Matching Your Search Criteria");
 				//System.out.println("Site No.\t MaxOccup.\t Accessible?\t Max RV Length\t Utilities\t Total Price");
-				System.out.printf("%-10s %-15s %-15s %-15s %-15s %-10s %n", "Site No.", "MaxOccup.", "Accessible?", "Max RV Length", "Utilities", "Total Price");
+				System.out.printf("%-10s %-15s %-15s %-15s %-15s %-10.2f %n", "Site No.", "MaxOccup.", "Accessible?", "Max RV Length", "Utilities", "Total Price");
 				Long daysBetween = ChronoUnit.DAYS.between(arrivalDate, departureDate);
 				BigDecimal daysBetweenBD = new BigDecimal(daysBetween);
 				if(availableSites.isEmpty()) {
@@ -207,10 +213,10 @@ public class CampgroundCLI {
 								element.isUtilities(), (daysBetweenBD.multiply(campground.getDailyFee())));
 						//System.out.println(element.getId() + "\t" + element.getMaxOccupancy() +"\t" + element.isAccessible() +"\t"+ element.getMaxRVLength() +"\t"+ element.isUtilities() +"\t"+ (daysBetweenBD.multiply(campground.getDailyFee())));
 					}
-					handleMakeReservation();
+					handleMakeReservation(arrivalDate, departureDate, siteId);
 				}
 			} else {
-				handleListAllCampgrounds(selectedPark);
+				handleListAllCampgrounds();
 			}
 		} else {
 			System.out.println("\n*** "+campgroundSelect+" is not a valid option for this park. ***\n");
@@ -219,7 +225,7 @@ public class CampgroundCLI {
 
 	}
 
-	private void handleMakeReservation() {
+	private void handleMakeReservation(LocalDate arrivalDate, LocalDate departureDate, Long siteId) {
 		String siteSelect = getUserInput("Which site should be reserved? (enter 0 to cancel)?");
 		siteId = Long.valueOf(siteSelect);
 		if(siteId > 0) {
@@ -228,7 +234,7 @@ public class CampgroundCLI {
 
 			System.out.println("Your reservation has been made. Please copy your confirmation number for your records: " + reservationInfo.getId());
 		} else {
-			handleListAllCampgrounds(selectedPark);
+			handleListAllCampgrounds();
 		}
 
 	}

@@ -20,10 +20,10 @@ public class JDBCReservationDAO implements ReservationDAO {
 	@Override
 	public Reservation bookReservation(String name, Long siteId, LocalDate arrivalDate, LocalDate departureDate) {
 		String sqlInsertStatement = "INSERT INTO reservation (site_id, name, from_date, to_date, create_date) VALUES "
-				+ "(?, ?, ?, ?, NOW())";
-		template.update(sqlInsertStatement, siteId, name, arrivalDate, departureDate);
-		String sqlGetReservationInfo = "SELECT * FROM reservation WHERE name = ? AND from_date = ? AND to_date = ?";
-		SqlRowSet results = template.queryForRowSet(sqlGetReservationInfo, name, arrivalDate, departureDate);
+				+ "(?, ?, ?, ?, NOW()) RETURNING reservation_id";
+		Long id = template.queryForObject(sqlInsertStatement, Long.class, siteId, name, arrivalDate, departureDate);
+		String sqlGetReservationInfo = "SELECT * FROM reservation WHERE reservation_id=?";
+		SqlRowSet results = template.queryForRowSet(sqlGetReservationInfo, id);
 		Reservation reservation = null;
 		if(results.next()){
 			reservation = mapRowToReservation(results);

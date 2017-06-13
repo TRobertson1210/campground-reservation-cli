@@ -34,10 +34,10 @@ public class JDBCCampgroundDAO implements CampgroundDAO {
 	}
 	
 	public Campground getCampgroundById(Long campgroundId) {
-		Campground campground = new Campground();
+		Campground campground = null;
 		String sqlGetCampgroundById = "SELECT * FROM campground WHERE campground_id = ?";
 		SqlRowSet results = template.queryForRowSet(sqlGetCampgroundById, campgroundId);
-		while (results.next()) {
+		if (results.next()) {
 			campground = mapRowToCampground(results);
 		}
 		return campground;

@@ -25,43 +25,35 @@ public class JDBCSiteDAO implements SiteDAO {
 	public List<Site> getAllAvailableSites(Long campgroundId, LocalDate fromDate, LocalDate toDate) {
 		List<Site> allAvailableSites = new ArrayList<>();
 
+		SqlRowSet results;
 
-		String sqlGetParkId = "SELECT park_id FROM campground WHERE campground_id = ?";
-		SqlRowSet results = template.queryForRowSet(sqlGetParkId, campgroundId);
-		Long parkId = null;
-		if(results.next()) {
-			parkId = results.getLong("park_id");
-		} 
-	
-	String sqlAllAvailableSites = "SELECT * FROM site WHERE campground_id = ? AND site_id NOT IN (SELECT site.site_id "
-			+ "FROM reservation "
-			+ "JOIN site ON site.site_id = reservation.site_id "
-			+ "JOIN campground ON campground.campground_id = site.campground_id "
-			+ "WHERE site.campground_id = ? "
-			+ "AND ((?  BETWEEN reservation.from_date AND reservation.to_date) "
-			+ "OR (?  BETWEEN reservation.from_date AND reservation.to_date) "
-			+ "OR (reservation.from_date BETWEEN ? AND ?) "
-			+ "OR (reservation.to_date BETWEEN ? AND ?))) "
-			+ "LIMIT 5";
-	results = template.queryForRowSet(sqlAllAvailableSites, campgroundId, campgroundId, fromDate, toDate, fromDate, toDate, fromDate, toDate);
-	while(results.next()) {
-		Site site = mapRowToSite(results);
-		allAvailableSites.add(site);
+		String sqlAllAvailableSites = "SELECT * FROM site WHERE campground_id = ? AND site_id NOT IN (SELECT site.site_id "
+				+ "FROM reservation " + "JOIN site ON site.site_id = reservation.site_id "
+				+ "JOIN campground ON campground.campground_id = site.campground_id " + "WHERE site.campground_id = ? "
+				+ "AND ((?  BETWEEN reservation.from_date AND reservation.to_date) "
+				+ "OR (?  BETWEEN reservation.from_date AND reservation.to_date) "
+				+ "OR (reservation.from_date BETWEEN ? AND ?) " + "OR (reservation.to_date BETWEEN ? AND ?))) "
+				+ "LIMIT 5";
+		results = template.queryForRowSet(sqlAllAvailableSites, campgroundId, campgroundId, fromDate, toDate, fromDate,
+				toDate, fromDate, toDate);
+		while (results.next()) {
+			Site site = mapRowToSite(results);
+			allAvailableSites.add(site);
+		}
+		return allAvailableSites;
 	}
-	return allAvailableSites;
-}
 
-public Site mapRowToSite(SqlRowSet results) {
-	Site site;
-	site = new Site();
-	site.setId(results.getLong("site_id"));
-	site.setSiteNumber(results.getInt("site_number"));
-	site.setMaxOccupancy(results.getInt("max_occupancy"));
-	site.setAccessible(results.getBoolean("accessible"));
-	site.setMaxRVLength(results.getInt("max_rv_length"));
-	site.setUtilities(results.getBoolean("utilities"));
+	public Site mapRowToSite(SqlRowSet results) {
+		Site site;
+		site = new Site();
+		site.setId(results.getLong("site_id"));
+		site.setSiteNumber(results.getInt("site_number"));
+		site.setMaxOccupancy(results.getInt("max_occupancy"));
+		site.setAccessible(results.getBoolean("accessible"));
+		site.setMaxRVLength(results.getInt("max_rv_length"));
+		site.setUtilities(results.getBoolean("utilities"));
 
-	return site;
-}
+		return site;
+	}
 
 }
