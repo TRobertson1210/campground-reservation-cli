@@ -65,7 +65,7 @@ public class CampgroundCLI {
 	}
 
 	/*
-	 * The CONSTRUCTOR for the CampgroundCLI application. Here we creating a Menu object,
+	 * The CONSTRUCTOR for the CampgroundCLI application. Here we are creating a Menu object,
 	 * making a connection to the database, and creating DAO objects to be used later.
 	 */
 	public CampgroundCLI() {
@@ -84,9 +84,9 @@ public class CampgroundCLI {
 	}
 
 	/*
-	 * The run() method that executes the start up of the program application. Here we are displaying a method
-	 * that shows a banner of the application name; uses a map to hold the list of parks data being retrieves from the 
-	 * campgrounds database;then displays a list of the parks as choices for the user to select.
+	 * The run() method executes the start up of the program application. Here we are displaying a method
+	 * that shows a banner of the application name; creating a map to hold the list of parks data being retrieved from the 
+	 * campgrounds database; then displays a list of the parks as choices for the user to select.
 	 */
 	public void run() {
 		displayApplicationBanner();
@@ -107,9 +107,9 @@ public class CampgroundCLI {
 				System.exit(0);
 			} else {
 				/*
-				 * The user's choice of park is associated to the park_id so we can carry the park_id through 
-				 * the program, using the selectedPark variable, so we can call relative information specific 
-				 * to this park_id.
+				 * The user's choice of parks is associated to the park_id so we can carry the park_id through 
+				 * the program, using the selectedPark variable. This will allow us to call relative information 
+				 * connected to this park_id.
 				 */
 				selectedPark = parks.get(choice);
 				handleParkInfoScreen(selectedPark);
@@ -117,9 +117,9 @@ public class CampgroundCLI {
 		}
 	}
 
-	//Handle Methods execute based on the user's choice
+	//Handle Methods are executed based on the user's choice
 	/*
-	 * This handle runs code that will display the park information details specific to the park_id that 
+	 * handleParkInfoScreen displays the park information details specific to the park_id that 
 	 * is passed through the selectedPark variable.
 	 * 
 	 * In addition, we are displaying the next set of options for the user to continue through the process
@@ -137,9 +137,14 @@ public class CampgroundCLI {
 	}
 	List<Campground> campgroundList = null; //created outside for use in multiple handles
 
+	/*
+	 * handleListAllCampgrounds displays a list of all campgrounds associated with the selectedPark
+	 */
 	private void handleListAllCampgrounds(Park selectedPark) {
 		printHeading("Park Campgrounds");
 		campgroundList = campgroundDAO.getAllCampgrounds(selectedPark);
+		//System.out.println("ID\tName\t\tOpen\tClose\tDaily Fee");
+		System.out.printf("%-5s %-20s %-10s %-10s %-10s %n", "ID", "Name", "Open", "Close", "Daily Fee");
 		for(Campground element : campgroundList) {
 			element.printCampgroundDetails();
 		}
@@ -150,6 +155,7 @@ public class CampgroundCLI {
 			handleParkInfoScreen(selectedPark);
 		}
 	}
+	
 	//Variables to store values for reservation
 	LocalDate arrivalDate = null;
 	LocalDate departureDate = null;
@@ -187,7 +193,8 @@ public class CampgroundCLI {
 				List<Site> availableSites= siteDAO.getAllAvailableSites(campgroundId, arrivalDate, departureDate);
 				Campground campground = campgroundDAO.getCampgroundById(campgroundId);
 				System.out.println("Results Matching Your Search Criteria");
-				System.out.println("Site No.\t MaxOccup.\t Accessible?\t Max RV Length\t Utilities\t Total Price");
+				//System.out.println("Site No.\t MaxOccup.\t Accessible?\t Max RV Length\t Utilities\t Total Price");
+				System.out.printf("%-10s %-15s %-15s %-15s %-15s %-10s %n", "Site No.", "MaxOccup.", "Accessible?", "Max RV Length", "Utilities", "Total Price");
 				Long daysBetween = ChronoUnit.DAYS.between(arrivalDate, departureDate);
 				BigDecimal daysBetweenBD = new BigDecimal(daysBetween);
 				if(availableSites.isEmpty()) {
@@ -196,7 +203,9 @@ public class CampgroundCLI {
 
 				} else {
 					for(Site element : availableSites) {
-						System.out.println(element.getId() + "\t" + element.getMaxOccupancy() +"\t" + element.isAccessible() +"\t"+ element.getMaxRVLength() +"\t"+ element.isUtilities() +"\t"+ (daysBetweenBD.multiply(campground.getDailyFee())));
+						System.out.printf("%-10s %-15s %-15s %-15s %-15s $%-10s %n", element.getId(), element.getMaxOccupancy(), element.isAccessible(), element.getMaxRVLength(), 
+								element.isUtilities(), (daysBetweenBD.multiply(campground.getDailyFee())));
+						//System.out.println(element.getId() + "\t" + element.getMaxOccupancy() +"\t" + element.isAccessible() +"\t"+ element.getMaxRVLength() +"\t"+ element.isUtilities() +"\t"+ (daysBetweenBD.multiply(campground.getDailyFee())));
 					}
 					handleMakeReservation();
 				}
